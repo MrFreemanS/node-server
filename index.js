@@ -2,6 +2,8 @@ const mysql = require('mysql');
 const express = require('express');
 var app = express();
 const bodyparser = require('body-parser');
+const urlencodedParser = bodyparser.urlencoded({extended: false});
+const crypto = require('crypto');
 app.use(bodyparser.json());
 
 
@@ -48,10 +50,28 @@ app.get('/news/:id', (req, res) => {
 app.delete('/news/:id', (req, res) => {
     mysqlConnection.query('DELETE FROM news WHERE news_id = ?', [req.params.id], (err, rows, fields) => {
         if (!err)
-            res.send('Deleted successfully.');
+            res.send('Deleted successfully');
         else
             console.log(err);
     })
 });
 
-app.listen(3012, () => console.log('Express server is runnig at port no : 3012'));
+app.post("/login", urlencodedParser, function (request, response) {
+    if(!request.body) return response.sendStatus(400);
+    console.log(request.body);
+
+    var sql = 'SELECT * FROM users WHERE login = ? and password = ?';
+    var login = request.body.login;
+    var password = request.body.password;
+    mysqlConnection.query(sql, [login, password], function (err, result) {
+      if (err) throw err;
+      console.log(result);
+      if(result.length == 0) return response.sendStatus(401);
+      else {
+        //response.sendStatus(200);
+      }
+    });
+
+});
+
+app.listen(3012, () => console.log('Server runnig'));
