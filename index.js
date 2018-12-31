@@ -3,7 +3,7 @@ const express = require('express');
 var app = express();
 const bodyparser = require('body-parser');
 const urlencodedParser = bodyparser.urlencoded({extended: false});
-const crypto = require('crypto');
+//const crypto = require('crypto');
 app.use(bodyparser.json());
 
 
@@ -15,18 +15,29 @@ var mysqlConnection = mysql.createConnection({
     multipleStatements: true
 });
 
-mysqlConnection.connect((err) => {
+
+function conn() {
+  mysqlConnection.connect((err) => {
     if (!err)
         console.log('DB connection succeded.');
     else
         console.log('DB connection failed \n Error : ' + JSON.stringify(err, undefined, 2));
 });
+}
 
+//Get page
+app.get('/page/:id', (req, res) => {
+    conn(); mysqlConnection.query('SELECT * FROM news LIMIT 10', (err, rows, fields) => {
+        if (!err)
+            res.send(rows);
+        else
+            console.log(err);
+    })
+});
 
-
-//Get all news
-app.get('/news', (req, res) => {
-    mysqlConnection.query('SELECT * FROM news LIMIT 10', (err, rows, fields) => {
+//search
+app.get('/search/:searchString', (req, res) => {
+    conn(); mysqlConnection.query('SELECT * FROM news LIMIT 10', (err, rows, fields) => {
         if (!err)
             res.send(rows);
         else
@@ -37,7 +48,7 @@ app.get('/news', (req, res) => {
 
 //Get an news
 app.get('/news/:id', (req, res) => {
-    mysqlConnection.query('SELECT * FROM news WHERE news_id = ?', [req.params.id], (err, rows, fields) => {
+    conn(); mysqlConnection.query('SELECT * FROM news WHERE news_id = ?', [req.params.id], (err, rows, fields) => {
         if (!err)
             res.send(rows);
         else
@@ -45,10 +56,9 @@ app.get('/news/:id', (req, res) => {
     })
 });
 
-
 //Delete an news
 app.delete('/news/:id', (req, res) => {
-    mysqlConnection.query('DELETE FROM news WHERE news_id = ?', [req.params.id], (err, rows, fields) => {
+    conn(); mysqlConnection.query('DELETE FROM news WHERE news_id = ?', [req.params.id], (err, rows, fields) => {
         if (!err)
             res.send('Deleted successfully');
         else
@@ -63,12 +73,12 @@ app.post("/login", urlencodedParser, function (request, response) {
     var sql = 'SELECT * FROM users WHERE login = ? and password = ?';
     var login = request.body.login;
     var password = request.body.password;
-    mysqlConnection.query(sql, [login, password], function (err, result) {
+    conn(); mysqlConnection.query(sql, [login, password], function (err, result) {
       if (err) throw err;
       console.log(result);
       if(result.length == 0) return response.sendStatus(401);
       else {
-        //response.sendStatus(200);
+        response.sendStatus(200);
       }
     });
 
