@@ -3,7 +3,7 @@ const express = require('express');
 var app = express();
 const bodyparser = require('body-parser');
 const urlencodedParser = bodyparser.urlencoded({extended: false});
-//const crypto = require('crypto');
+
 app.use(bodyparser.json());
 
 var mysqlConnection = mysql.createConnection({
@@ -25,11 +25,12 @@ function conn() {
 
 conn();
 
-//Get news
+//Get page
 app.get('/page/:id', (req, res) => {
+
   var id = req.params.id*10;
 
-  mysqlConnection.query('SELECT * FROM news WHERE news_type = 0 and news_id>? LIMIT 10',id, (err, rows, fields) => {
+  mysqlConnection.query('SELECT * FROM news WHERE news_id>? LIMIT 10',id, (err, rows, fields) => {
   if (!err)
     res.send(rows);
   else
@@ -41,7 +42,7 @@ app.get('/page/:id', (req, res) => {
 //Get news
 app.get('/page/', (req, res) => {
 
-    mysqlConnection.query('SELECT * FROM news WHERE news_type = 0 LIMIT 10', (err, rows, fields) => {
+    mysqlConnection.query('SELECT * FROM news LIMIT 10', (err, rows, fields) => {
         if (!err)
             res.send(rows);
         else
@@ -50,11 +51,10 @@ app.get('/page/', (req, res) => {
     //mysqlConnection.end();
 });
 
-
 //Get incident
 app.get('/incident/:id', (req, res) => {
 var id = req.params.id*10;
-    mysqlConnection.query('SELECT * FROM news WHERE news_type = 1 and news_id>? LIMIT 10', (err, rows, fields) => {
+    mysqlConnection.query('SELECT * FROM inc WHERE inc_id>? LIMIT 10', (err, rows, fields) => {
         if (!err)
             res.send(rows);
         else
@@ -66,7 +66,7 @@ var id = req.params.id*10;
 //Get incident
 app.get('/incident/', (req, res) => {
 
-    mysqlConnection.query('SELECT * FROM news WHERE news_type = 1 LIMIT 10', (err, rows, fields) => {
+    mysqlConnection.query('SELECT * FROM inc LIMIT 10', (err, rows, fields) => {
         if (!err)
             res.send(rows);
         else
@@ -74,24 +74,6 @@ app.get('/incident/', (req, res) => {
     });
     //mysqlConnection.end();
 });
-
-
-/*
-//Get search
-app.get('/search/:searchString', (req, res) => {
-  var t =
-  var sql = 'SELECT * FROM news WHERE news_txt LIKE \'%'+[req.params.searchString]+'%';
-  console.log(sql);
-
-  mysqlConnection.query(sql, (err, rows, fields) => {
-      if (!err)
-          res.send(rows);
-      else
-          console.log(err);
-  });
-    //mysqlConnection.end();
-});
-*/
 
 //Get an news
 app.get('/news/:id', (req, res) => {
