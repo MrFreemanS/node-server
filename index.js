@@ -6,7 +6,6 @@ const urlencodedParser = bodyparser.urlencoded({extended: false});
 //const crypto = require('crypto');
 app.use(bodyparser.json());
 
-
 var mysqlConnection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
@@ -14,7 +13,6 @@ var mysqlConnection = mysql.createConnection({
     database: 'api_db',
     multipleStatements: true
 });
-
 
 function conn() {
   mysqlConnection.connect((err) => {
@@ -25,30 +23,80 @@ function conn() {
 });
 }
 
-//Get page
+conn();
+
+//Get news
 app.get('/page/:id', (req, res) => {
-    conn(); mysqlConnection.query('SELECT * FROM news LIMIT 10', (err, rows, fields) => {
+  var id = req.params.id*10;
+
+  mysqlConnection.query('SELECT * FROM news WHERE news_type = 0 and news_id>? LIMIT 10',id, (err, rows, fields) => {
+  if (!err)
+    res.send(rows);
+  else
+    console.log(err);
+  });
+    //mysqlConnection.end();
+});
+
+//Get news
+app.get('/page/', (req, res) => {
+
+    mysqlConnection.query('SELECT * FROM news WHERE news_type = 0 LIMIT 10', (err, rows, fields) => {
         if (!err)
             res.send(rows);
         else
             console.log(err);
-    })
+    });
+    //mysqlConnection.end();
 });
 
-//search
+
+//Get incident
+app.get('/incident/:id', (req, res) => {
+var id = req.params.id*10;
+    mysqlConnection.query('SELECT * FROM news WHERE news_type = 1 and news_id>? LIMIT 10', (err, rows, fields) => {
+        if (!err)
+            res.send(rows);
+        else
+            console.log(err);
+    });
+    //mysqlConnection.end();
+});
+
+//Get incident
+app.get('/incident/', (req, res) => {
+
+    mysqlConnection.query('SELECT * FROM news WHERE news_type = 1 LIMIT 10', (err, rows, fields) => {
+        if (!err)
+            res.send(rows);
+        else
+            console.log(err);
+    });
+    //mysqlConnection.end();
+});
+
+
+/*
+//Get search
 app.get('/search/:searchString', (req, res) => {
-    conn(); mysqlConnection.query('SELECT * FROM news LIMIT 10', (err, rows, fields) => {
-        if (!err)
-            res.send(rows);
-        else
-            console.log(err);
-    })
-});
+  var t =
+  var sql = 'SELECT * FROM news WHERE news_txt LIKE \'%'+[req.params.searchString]+'%';
+  console.log(sql);
 
+  mysqlConnection.query(sql, (err, rows, fields) => {
+      if (!err)
+          res.send(rows);
+      else
+          console.log(err);
+  });
+    //mysqlConnection.end();
+});
+*/
 
 //Get an news
 app.get('/news/:id', (req, res) => {
-    conn(); mysqlConnection.query('SELECT * FROM news WHERE news_id = ?', [req.params.id], (err, rows, fields) => {
+
+    mysqlConnection.query('SELECT * FROM news WHERE news_id = ?', [req.params.id], (err, rows, fields) => {
         if (!err)
             res.send(rows);
         else
@@ -58,7 +106,8 @@ app.get('/news/:id', (req, res) => {
 
 //Delete an news
 app.delete('/news/:id', (req, res) => {
-    conn(); mysqlConnection.query('DELETE FROM news WHERE news_id = ?', [req.params.id], (err, rows, fields) => {
+
+    mysqlConnection.query('DELETE FROM news WHERE news_id = ?', [req.params.id], (err, rows, fields) => {
         if (!err)
             res.send('Deleted successfully');
         else
@@ -81,7 +130,6 @@ app.post("/login", urlencodedParser, function (request, response) {
         response.sendStatus(200);
       }
     });
-
 });
 
 app.listen(3012, () => console.log('Server runnig'));
