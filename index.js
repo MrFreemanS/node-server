@@ -7,48 +7,44 @@ const urlencodedParser = bodyparser.urlencoded({extended: false});
 app.use(bodyparser.json());
 
 var mysqlConnection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
+    host: '192.168.1.107',
+    user: 'api_user1',
+    password: '12345678',
     database: 'api_db',
+    port: '3306',
     multipleStatements: true
 });
 
-function conn() {
-  mysqlConnection.connect((err) => {
-    if (!err)
-        console.log('DB connection succeded.');
-    else
-        console.log('DB connection failed \n Error : ' + JSON.stringify(err, undefined, 2));
+mysqlConnection.connect((err) => {
+  if (!err)
+      console.log('DB connection succeded.');
+  else
+      console.log('DB connection failed \n Error : ' + JSON.stringify(err, undefined, 2));
 });
-}
-
-conn();
 
 //Get page
-app.get('/page/:id', (req, res) => {
+app.get('/page/:startPoint', (req, res) => {
 
-  var id = req.params.id*10;
-
-  mysqlConnection.query('SELECT * FROM news WHERE news_id>? LIMIT 10',id, (err, rows, fields) => {
+var startPoint = req.params.startPoint;
+var endPoint;
+if (startPoint<=1) {
+  startPoint = 0;
+  endPoint = 10;
+}
+else {
+  endPoint= startPoint*10;
+  startPoint = endPoint - 10;
+}
+//console.log(startPoint);
+//console.log(endPoint);
+var sql = 'SELECT * FROM news ORDER BY news_id ASC LIMIT ?,?';
+  mysqlConnection.query(sql,[startPoint,endPoint], (err, rows, fields) => {
   if (!err)
     res.send(rows);
   else
     console.log(err);
   });
-    //mysqlConnection.end();
-});
-
-//Get news
-app.get('/page/', (req, res) => {
-
-    mysqlConnection.query('SELECT * FROM news LIMIT 10', (err, rows, fields) => {
-        if (!err)
-            res.send(rows);
-        else
-            console.log(err);
-    });
-    //mysqlConnection.end();
+  //mysqlConnection.end();
 });
 
 //Get incident
@@ -98,20 +94,24 @@ app.delete('/news/:id', (req, res) => {
 });
 
 app.post("/login", urlencodedParser, function (request, response) {
-    if(!request.body) return response.sendStatus(400);
+    if(!request.body)
+      return response.sendStatus(400);
     console.log(request.body);
 
     var sql = 'SELECT * FROM users WHERE login = ? and password = ?';
     var login = request.body.login;
     var password = request.body.password;
-    conn(); mysqlConnection.query(sql, [login, password], function (err, result) {
+
+    mysqlConnection.query(sql, [login, password], function (err, result) {
       if (err) throw err;
       console.log(result);
-      if(result.length == 0) return response.sendStatus(401);
+      if (result.length == 0)
+        return response.sendStatus(401);
       else {
         response.sendStatus(200);
       }
     });
+
 });
 
 app.listen(3012, () => console.log('Server runnig'));
