@@ -117,19 +117,20 @@ app.get('/search/:searchString', (req, res) => {
 app.post("/login", urlencodedParser, function (request, response) {
     if(!request.body)
       return response.sendStatus(400);
-    //console.log(request.body);
-
-    var sql = 'SELECT * FROM users WHERE user_name = ? and user_password = ?';
+    var sql = 'SELECT * FROM users WHERE user_name =  ? and user_password =  ?';
     var login = request.body.login;
     var password = request.body.password;
-
+    //console.log(login);
+    //console.log(password);
     mysqlConnection.query(sql, [login, password], function (err, result) {
       if (err) throw err;
-      //console.log(result);
-      if (result.length == 0)
-        return response.sendStatus(401);
+
+      console.log(result[0].user_type);
+
+      if (result.length != 0 && result[0].user_type == 1)
+        return response.sendStatus(200);
       else {
-        response.sendStatus(200);
+        response.sendStatus(401);
       }
     });
 });
