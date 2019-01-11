@@ -103,6 +103,7 @@ app.get('/incidient/:id', (req, res) => {
     })
 });
 
+
 app.get('/search/:searchString', (req, res) => {
     var sql= 'SELECT * FROM news WHERE news_txt LIKE ?';
     console.log(searchString);
@@ -120,12 +121,11 @@ app.post("/login", urlencodedParser, function (request, response) {
     var sql = 'SELECT * FROM users WHERE user_name =  ? and user_password =  ?';
     var login = request.body.login;
     var password = request.body.password;
-    //console.log(login);
-    //console.log(password);
+
     mysqlConnection.query(sql, [login, password], function (err, result) {
       if (err) throw err;
 
-      console.log(result[0].user_type);
+    //  console.log(result[0].user_type);
 
       if (result.length != 0 && result[0].user_type == 1)
         return response.sendStatus(200);
