@@ -59,12 +59,13 @@ app.get('/news/:id', (req, res) => {
 
 //Delete an news
 app.delete('/news/:id', (req, res) => {
-
+console.log(req.params.id);
     mysqlConnection.query('DELETE FROM news WHERE news_id = ?', [req.params.id], (err, rows, fields) => {
         if (!err)
-            res.send('Deleted successfully');
+            return response.sendStatus(200);
         else
             console.log(err);
+            return response.sendStatus(400);
     })
 });
 
@@ -88,6 +89,7 @@ var sql = 'SELECT * FROM inc ORDER BY inc_id ASC LIMIT ?,?';
     res.send(rows);
   else
     console.log(err);
+    return response.sendStatus(400);
   });
   //mysqlConnection.end();
 });
@@ -100,25 +102,26 @@ app.get('/incidient/:id', (req, res) => {
             res.send(rows);
         else
             console.log(err);
+            return response.sendStatus(400);
     })
 });
 
-
-app.get('/search/:searchString', (req, res) => {
+app.get('/search/:string', (req, res) => {
     var sql= 'SELECT * FROM news WHERE news_txt LIKE ?';
-    console.log(searchString);
-    mysqlConnection.query(sql, [req.params.searchString], (err, rows, fields) => {
+    //console.log(req.params.string);
+    mysqlConnection.query(sql, [req.params.string], (err, rows, fields) => {
         if (!err)
             res.send(rows);
         else
             console.log(err);
+            return response.sendStatus(400);
     })
 });
 
 app.post("/login", urlencodedParser, function (request, response) {
     if(!request.body)
       return response.sendStatus(400);
-    var sql = 'SELECT * FROM users WHERE user_name =  ? and user_password =  ?';
+    var sql = 'SELECT user_type FROM users WHERE user_name =  ? and user_password =  ?';
     var login = request.body.login;
     var password = request.body.password;
 
@@ -126,6 +129,26 @@ app.post("/login", urlencodedParser, function (request, response) {
       if (err) throw err;
 
     //  console.log(result[0].user_type);
+
+      if (result.length != 0 && result[0].user_type == 1)
+        return response.sendStatus(200);
+      else {
+        response.sendStatus(401);
+      }
+    });
+});
+
+app.post("/isadmin", urlencodedParser, function (request, response) {
+  //console.log(request.body);
+    if(!request.body)
+      return response.sendStatus(400);
+    var sql = 'SELECT user_type FROM users WHERE user_name =  ?';
+    var login = request.body.login;
+
+    mysqlConnection.query(sql, [login], function (err, result) {
+      if (err) throw err;
+
+      //console.log(result[0].user_type);
 
       if (result.length != 0 && result[0].user_type == 1)
         return response.sendStatus(200);
