@@ -46,6 +46,31 @@ var sql = 'SELECT * FROM news ORDER BY news_id ASC LIMIT ?,?';
   //mysqlConnection.end();
 });
 
+
+//Get news page
+app.get('/users/:startPoint', (req, res) => {
+
+var startPoint = req.params.startPoint;
+var endPoint;
+if (startPoint<=1) {
+  startPoint = 0;
+  endPoint = 10;
+}
+else {
+  endPoint= startPoint*10;
+  startPoint = endPoint - 10;
+}
+
+var sql = 'SELECT * FROM users ORDER BY user_id ASC LIMIT ?,?';
+  mysqlConnection.query(sql,[startPoint,endPoint], (err, rows, fields) => {
+  if (!err)
+    res.send(rows);
+  else
+    console.log(err);
+  });
+  //mysqlConnection.end();
+});
+
 //Get an news
 app.get('/news/:id', (req, res) => {
 
@@ -56,6 +81,19 @@ app.get('/news/:id', (req, res) => {
             console.log(err);
     })
 });
+
+//Get an news
+app.get('/user/:id', (req, res) => {
+
+    mysqlConnection.query('SELECT * FROM users WHERE user_id = ?', [req.params.id], (err, rows, fields) => {
+        if (!err)
+            res.send(rows);
+        else
+            console.log(err);
+    })
+});
+
+
 
 //Delete an news
 app.delete('/news/:id', (req, res) => {
