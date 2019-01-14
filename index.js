@@ -8,7 +8,7 @@ app.use(bodyparser.json());
 
 var mysqlConnection = mysql.createConnection({
     host: '192.168.1.107',
-    user: 'api_user1',
+    user: 'api_user',
     password: '12345678',
     database: 'api_db',
     port: '3306',
@@ -22,7 +22,7 @@ mysqlConnection.connect((err) => {
       console.log('DB connection failed \n Error : ' + JSON.stringify(err, undefined, 2));
 });
 
-//Get news page
+
 app.get('/page/:startPoint', (req, res) => {
 
 var startPoint = req.params.startPoint;
@@ -47,7 +47,6 @@ var sql = 'SELECT * FROM news ORDER BY news_id ASC LIMIT ?,?';
 });
 
 
-//Get news page
 app.get('/users/:startPoint', (req, res) => {
 
 var startPoint = req.params.startPoint;
@@ -71,7 +70,6 @@ var sql = 'SELECT * FROM users ORDER BY user_id ASC LIMIT ?,?';
   //mysqlConnection.end();
 });
 
-//Get an news
 app.get('/news/:id', (req, res) => {
 
     mysqlConnection.query('SELECT * FROM news WHERE news_id = ?', [req.params.id], (err, rows, fields) => {
@@ -82,31 +80,57 @@ app.get('/news/:id', (req, res) => {
     })
 });
 
-//Get an news
-app.get('/user/:id', (req, res) => {
+app.put("/news/", urlencodedParser, function (request, response) {
+  console.log(request.body);
+    if(!request.body)
+      return response.sendStatus(400);
+    var sql = 'INSERT INTO news (news_title, news_txt) VALUES (?, ?);';
+    var title = request.body.title;
+    var news = request.body.news;
 
-    mysqlConnection.query('SELECT * FROM users WHERE user_id = ?', [req.params.id], (err, rows, fields) => {
-        if (!err)
-            res.send(rows);
-        else
-            console.log(err);
-    })
+    mysqlConnection.query(sql, [title, news], function (err, result) {
+      if (!err)
+      {
+        return response.sendStatus(200);
+      }
+      else {
+          response.sendStatus(400);
+      }
+    });
+});
+
+app.post("/news/", urlencodedParser, function (request, response) {
+  console.log(request.body);
+    if(!request.body)
+      return response.sendStatus(400);
+    var sql = 'UPDATE news SET news_title = ?, news_txt = ? WHERE news_id = ?;';
+    var title = request.body.title;
+    var news = request.body.news;
+    var id = request.body.id;
+
+    mysqlConnection.query(sql, [title, news,id], function (err, result) {
+      if (!err)
+      {
+        return response.sendStatus(200);
+      }
+      else {
+          response.sendStatus(400);
+      }
+    });
 });
 
 
-
-//Delete an news
 app.delete('/news/:id', (req, res) => {
-console.log(req.params.id);
+
     mysqlConnection.query('DELETE FROM news WHERE news_id = ?', [req.params.id], (err, rows, fields) => {
+
         if (!err)
-            return response.sendStatus(200);
+            return res.sendStatus(200);
         else
             console.log(err);
-            return response.sendStatus(400);
+            return res.sendStatus(400);
     })
 });
-
 
 app.get('/inc_page/:startPoint', (req, res) => {
 
@@ -132,7 +156,6 @@ var sql = 'SELECT * FROM inc ORDER BY inc_id ASC LIMIT ?,?';
   //mysqlConnection.end();
 });
 
-//Get an incidient
 app.get('/incidient/:id', (req, res) => {
 
     mysqlConnection.query('SELECT * FROM inc WHERE inc_id = ?', [req.params.id], (err, rows, fields) => {
@@ -153,6 +176,16 @@ app.get('/search/:string', (req, res) => {
         else
             console.log(err);
             return response.sendStatus(400);
+    })
+});
+
+app.get('/user/:id', (req, res) => {
+
+    mysqlConnection.query('SELECT * FROM users WHERE user_id = ?', [req.params.id], (err, rows, fields) => {
+        if (!err)
+            res.send(rows);
+        else
+            console.log(err);
     })
 });
 
@@ -195,7 +228,5 @@ app.post("/isadmin", urlencodedParser, function (request, response) {
       }
     });
 });
-
-
 
 app.listen(3012, () => console.log('Server runnig'));
