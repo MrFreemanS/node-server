@@ -132,7 +132,7 @@ app.delete('/news/:id', (req, res) => {
     })
 });
 
-app.get('/inc_page/:startPoint', (req, res) => {
+app.get('/inc/:startPoint', (req, res) => {
 
 var startPoint = req.params.startPoint;
 var endPoint;
@@ -151,12 +151,11 @@ var sql = 'SELECT * FROM inc ORDER BY inc_id ASC LIMIT ?,?';
     res.send(rows);
   else
     console.log(err);
-    return response.sendStatus(400);
   });
   //mysqlConnection.end();
 });
 
-app.get('/incidient/:id', (req, res) => {
+app.get('/inc/:id', (req, res) => {
 
     mysqlConnection.query('SELECT * FROM inc WHERE inc_id = ?', [req.params.id], (err, rows, fields) => {
         if (!err)
