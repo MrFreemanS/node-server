@@ -7,9 +7,9 @@ const urlencodedParser = bodyparser.urlencoded({extended: false});
 app.use(bodyparser.json());
 
 var mysqlConnection = mysql.createConnection({
-    host: '192.168.1.107',
-    user: 'api_user',
-    password: '12345678',
+    host: 'localhost',
+    user: 'root',
+    password: '',
     database: 'api_db',
     port: '3306',
     multipleStatements: true
@@ -21,6 +21,21 @@ mysqlConnection.connect((err) => {
   else
       console.log('DB connection failed \n Error : ' + JSON.stringify(err, undefined, 2));
 });
+
+app.get('/page/', (req, res) => {
+
+var sql = 'SELECT * FROM news ORDER BY news_id DESC LIMIT 100';
+  mysqlConnection.query(sql, (err, rows, fields) => {
+  if (!err)
+  {
+    res.send(rows);
+  }
+  else
+    console.log(err);
+  });
+  //mysqlConnection.end();
+});
+
 
 
 app.get('/page/:startPoint', (req, res) => {
@@ -79,6 +94,17 @@ app.get('/news/:id', (req, res) => {
             console.log(err);
     })
 });
+
+app.get('/news/:id/news_txt', (req, res) => {
+
+    mysqlConnection.query('SELECT * FROM news WHERE news_id = ?', [req.params.id], (err, rows, fields) => {
+        if (!err)
+            res.send(rows[0].news_txt);
+        else
+            console.log(err);
+    })
+});
+
 
 app.put("/news/", urlencodedParser, function (request, response) {
   console.log(request.body);
