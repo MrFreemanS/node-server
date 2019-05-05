@@ -63,19 +63,18 @@ var sql = 'SELECT * FROM news ORDER BY news_id ASC LIMIT ?,?';
 
 
 app.get('/users/:startPoint', (req, res) => {
+  var startPoint = req.params.startPoint;
+  var endPoint;
+  if (startPoint<=1) {
+    startPoint = 0;
+    endPoint = 10;
+  }
+  else {
+    endPoint= startPoint*10;
+    startPoint = endPoint - 10;
+  }
 
-var startPoint = req.params.startPoint;
-var endPoint;
-if (startPoint<=1) {
-  startPoint = 0;
-  endPoint = 10;
-}
-else {
-  endPoint= startPoint*10;
-  startPoint = endPoint - 10;
-}
-
-var sql = 'SELECT * FROM users ORDER BY user_id ASC LIMIT ?,?';
+  var sql = 'SELECT * FROM users ORDER BY user_id ASC LIMIT ?,?';
   mysqlConnection.query(sql,[startPoint,endPoint], (err, rows, fields) => {
   if (!err)
     res.send(rows);
@@ -83,6 +82,16 @@ var sql = 'SELECT * FROM users ORDER BY user_id ASC LIMIT ?,?';
     console.log(err);
   });
   //mysqlConnection.end();
+});
+
+app.get('/user/:id', (req, res) => {
+
+    mysqlConnection.query('SELECT * FROM users WHERE user_id = ?', [req.params.id], (err, rows, fields) => {
+        if (!err)
+            res.send(rows);
+        else
+            console.log(err);
+    })
 });
 
 app.get('/news/:id', (req, res) => {
@@ -99,12 +108,16 @@ app.get('/news/:id/news_txt', (req, res) => {
 
     mysqlConnection.query('SELECT * FROM news WHERE news_id = ?', [req.params.id], (err, rows, fields) => {
         if (!err)
-            res.send(rows[0].news_txt);
+        {
+          res.send(rows[0].news_txt);
+        }
         else
-            console.log(err);
+        {
+          console.log(err);
+          res.sendStatus(400);
+        }
     })
 });
-
 
 app.put("/news/", urlencodedParser, function (request, response) {
   console.log(request.body);
@@ -204,15 +217,7 @@ app.get('/search/:string', (req, res) => {
     })
 });
 
-app.get('/user/:id', (req, res) => {
 
-    mysqlConnection.query('SELECT * FROM users WHERE user_id = ?', [req.params.id], (err, rows, fields) => {
-        if (!err)
-            res.send(rows);
-        else
-            console.log(err);
-    })
-});
 
 app.post("/login", urlencodedParser, function (request, response) {
     if(!request.body)
