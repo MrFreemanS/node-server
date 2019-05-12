@@ -22,7 +22,7 @@ mysqlConnection.connect((err) => {
       console.log('DB connection failed \n Error : ' + JSON.stringify(err, undefined, 2));
 });
 
-app.get('/page/', (req, res) => {
+app.get('/news/', (req, res) => {
 
 var sql = 'SELECT * FROM news ORDER BY news_id DESC LIMIT 100';
   mysqlConnection.query(sql, (err, rows, fields) => {
